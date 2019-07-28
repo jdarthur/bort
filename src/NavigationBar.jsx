@@ -29,6 +29,10 @@ class NavigationBar extends Component {
 
     login = (username, password) => {
         console.log("logging in as " + username + "/" + password)
+        postData("/login", {username, password})
+            .then(data => console.log(JSON.stringify(data)))
+            .catch(error => console.log(error))
+
         //send data to server
         //if success,
           //set this.logged_in = true
@@ -40,11 +44,14 @@ class NavigationBar extends Component {
 
     register = (username, password) => {
         console.log("registering as " + username + "/" + password)
+        postData("/register", {username, password})
+            .then(data => console.log(JSON.stringify(data)))
+            .catch(error => console.log(error))
         //send data to server
         //if success,
           //tell user to log in
           //close login box
-          //hid reg/login buttons
+          //hide reg/login buttons
         //else
           // show registration failure message
     }
@@ -59,6 +66,19 @@ class NavigationBar extends Component {
             </div>
             )
     }
+}
+
+function postData(url, data) {
+  // Default options are marked with *
+  console.log(data)
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    })
+    .then(response => response.json()); // parses JSON response into native JavaScript objects
 }
 
 export default NavigationBar
