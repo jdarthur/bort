@@ -667,6 +667,13 @@ caption {
 /* Layout
   =============== */
 
+
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
 .navigation_bar {
   /*width: 100vw;*/
   display: flex;
@@ -705,3 +712,49 @@ caption {
   font-weight: bold;
   /*background: white;*/
 }
+
+.thread_list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid black;
+  background: #f5f5f5;
+  flex-grow: 1;
+  padding: 5px;
+  align-items: flex-start;
+}
+
+.thread {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid black;
+  background: #696969;
+  padding: 5px;
+  color: white;
+  align-items: flex-start;
+  margin: 5px;
+}
+
+.post {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid black;
+  margin: 5px;
+
+}
+
+.post_header {
+  text-align: center;
+  border-bottom: 1px solid black;
+  background: #420420;
+  color: white;
+  padding: 5px;
+  font-weight: bold;
+}
+
+.post_body {
+  text-align: center;
+  background: #deaddd;
+  color: black;
+  padding: 15px;
+}
+

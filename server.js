@@ -25,6 +25,12 @@ db.connect( err => {
     console.log("connected to db")
 })
 
+/**
+==========================================
+             LOGIN/REGISTRATION
+==========================================
+*/
+
 app.post('/register', function (req, res) {
     const valid_req = valid_login_register_request(req)
     if (valid_req !== true) {
@@ -127,6 +133,41 @@ function has_illegal_characters(string) {
     }
     return false
 }
+/*
+=============================================
+=============================================
+                T H R E A D S
+=============================================
+=============================================
+*/
+
+/*
+
+*/
+app.get('/threads', function (req, res) {
+
+    return res.send({"threads": []})
+
+    // db.query("SELECT * FROM user WHERE name='" + req.body.username + "';", (err, result) => {
+    //     if (err) {
+    //         throw_err
+    //     }
+
+    //     if (result.length !== 0) {
+    //         const hash = result[0].password_hash
+    //         const success = bcrypt.compareSync(req.body.password, hash)
+    //         if (success) {
+    //              return res.send({"response": "Successfully logged in as '" + req.body.username + "."})
+    //         }
+    //         else {
+    //             return res.send({"response": "Invalid username or password."})
+    //         }
+    //     }
+    //     else {
+    //         return res.send({"response": "Invalid username or password."})
+    //     }
+    // })
+});
 
 
 
