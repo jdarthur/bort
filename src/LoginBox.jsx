@@ -19,8 +19,12 @@ class Login extends Component {
     }
 
     login = () => {
-        this.props.login_function(this.state.username,
-                                  this.state.password)
+        const success = this.props.login_function(this.state.username,
+                                                  this.state.password)
+        console.log(success)
+        if (!success) {
+            console.log("login failed")
+        }
     }
 
     render() {

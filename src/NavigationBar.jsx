@@ -44,8 +44,10 @@ class NavigationBar extends Component {
     render() {
         return (
             <div className="navigation_bar">
-            { !this.props.logged_in ? <input className="navigation_bar_button" type="button" value="Log In" onClick={this.show_login} /> : null }
-            { !this.props.logged_in ? <input className="navigation_bar_button" type="button" value="Register" onClick={this.show_register} /> : null }
+            { !this.props.logged_in ? <input className="navigation_bar_button" type="button" value="Log In"
+                                             onClick={this.show_login} /> : null }
+            { !this.props.logged_in ? <input className="navigation_bar_button" type="button"
+                                             value="Register" onClick={this.show_register} /> : null }
             { this.props.logged_in ? <UserSummary username={this.props.user} /> : null}
             { (!this.props.logged_in && this.state.show_login) ? <LoginBox close_function={this.hide_login}
                                                                            login_function={this.props.login_function}/> : null }

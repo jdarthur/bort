@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import Post from "./Post.jsx"
+import NewPost from "./NewPost.jsx"
 
 class Thread extends Component {
 
@@ -15,6 +16,7 @@ class Thread extends Component {
             <div className="thread">
             <strong> {this.state.title}</strong>
             {post_list}
+            {this.props.logged_in ? <NewPost /> : null}
             </div>
             )
     }

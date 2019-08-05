@@ -16,8 +16,10 @@ class App extends Component {
                 console.log(JSON.stringify(data))
                 this.setState({logged_in: true, user: username})
                 return true
+            }).catch(error => {
+                return false
             })
-            .catch(error => console.log(error))
+
 
         //send data to server
         //if success,
@@ -32,7 +34,7 @@ class App extends Component {
         return (
             <div className="page">
             <NavigationBar logged_in={this.state.logged_in} user={this.state.user} login_function={this.login}/>
-            <ThreadList />
+            <ThreadList logged_in={this.state.logged_in} user={this.state.user}/>
             </div>
             )
     }
@@ -48,7 +50,13 @@ function postData(url, data) {
         },
         body: JSON.stringify(data),
     })
-    .then(response => response.json()); // parses JSON response into native JavaScript objects
+    .then(response => {
+
+        if (response.status !== 200) {
+            throw new Error(response.status)
+        }
+        return response.json()
+    }); // parses JSON response into native JavaScript objects
 }
 
 export default App

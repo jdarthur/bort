@@ -3,33 +3,36 @@ const bodyParser = require('body-parser')
 const path = require('path');
 const uuid = require("uuid/v4")
 const bcrypt = require("bcrypt")
-var mysql = require('mysql');
 
 const app = express();
 app.use(express.static(path.join(__dirname, 'build')))
 app.use(express.json())
 
-const LEGAL_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXZY0123456789!@#$%^&"
+const mysql = require('mysql2/promise')
+let conn = null
 
-var db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: process.env.DB_PASSWORD,
-  database: "bort"
-});
+async function main() {
 
-db.connect( err => {
-    if (err) {
-        throw err
-    }
-    console.log("connected to db")
-})
+    conn = await mysql.createConnection({
+      connectionLimit: 10,
+      host: 'localhost',
+      user: 'root',
+      password: process.env.DB_PASSWORD,
+      database: 'bort'
+    })
+    const [rows, fields] = await conn.execute('SELECT * FROM user;');
+    // console.log(rows)
+}
+main()
 
 /**
 ==========================================
+==========================================
              LOGIN/REGISTRATION
 ==========================================
+==========================================
 */
+const LEGAL_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXZY0123456789!@#$%^&"
 
 app.post('/register', function (req, res) {
     const valid_req = valid_login_register_request(req)
@@ -65,26 +68,31 @@ app.post('/login', function (req, res) {
         return res.send(valid_req)
     }
 
-    db.query("SELECT * FROM user WHERE name='" + req.body.username + "';", (err, result) => {
-        if (err) {
-            throw_err
-        }
+    get_user(req.body.username, req.body.password, res)
+
+});
+
+async function get_user(username, password, res) {
+    try {
+        const [result, fields] = await conn.query("SELECT * FROM user WHERE name='" + username + "';")
 
         if (result.length !== 0) {
             const hash = result[0].password_hash
-            const success = bcrypt.compareSync(req.body.password, hash)
+            const success = await bcrypt.compare(password, hash)
             if (success) {
-                 return res.send({"response": "Successfully logged in as '" + req.body.username + "."})
+                return res.send({"response": "Successfully logged in as '" + username + "'."})
             }
-            else {
-                return res.send({"response": "Invalid username or password."})
-            }
+
+            return res.status(401).send(invalid_username_password_response())
         }
-        else {
-            return res.send({"response": "Invalid username or password."})
-        }
-    })
-});
+
+        return res.status(401).send(invalid_username_password_response())
+    }
+
+    catch(err) {
+        throw err
+    }
+}
 
 function valid_login_register_request(req) {
     /*
@@ -120,6 +128,10 @@ function illegal_character_response(ill_char, field) {
 
 function missing_field_response(field) {
     return {"response": "Missing " + field + "' field."}
+}
+
+function invalid_username_password_response() {
+    return {"response": "Invalid username or password."}
 }
 
 function has_illegal_characters(string) {

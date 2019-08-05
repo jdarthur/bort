@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import Thread from "./Thread.jsx"
+import NewThread from "./NewThread.jsx"
 
 const threads = [{
     title: "the first ever thread",
@@ -52,13 +53,30 @@ const threads = [{
 
 class ThreadList extends Component {
     state =  {
-        threads: threads
+        threads: threads,
+        show_newthread: false,
+    }
+
+    show_newthread = () =>  {
+        this.setState({show_newthread: true})
+    }
+
+    hide_newthread = () =>  {
+        this.setState({show_newthread: true})
     }
 
     render() {
-        const thread_list = this.state.threads.map((thread) => <Thread key={thread.id} title={thread.title} posts={thread.posts} />);
+        const thread_list = this.state.threads.map((thread) => (
+             <Thread key={thread.id}
+                     title={thread.title}
+                     posts={thread.posts}
+                     logged_in={this.props.logged_in} />
+                 ));
         return (
             <div className="thread_list">
+            { (this.props.logged_in && !this.state.show_newthread ) ? <input type="button" value="New thread"
+                                                                             onClick={this.show_newthread} /> : null }
+            { this.state.show_newthread ? <NewThread /> : null}
             {thread_list}
             </div>
             )
