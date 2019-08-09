@@ -44,13 +44,14 @@ class NavigationBar extends Component {
     render() {
         return (
             <div className="navigation_bar">
-            { !this.props.logged_in ? <input className="navigation_bar_button" type="button" value="Log In"
+            { !this.props.logged_in ? <input className="spaced_button" type="button" value="Log In"
                                              onClick={this.show_login} /> : null }
-            { !this.props.logged_in ? <input className="navigation_bar_button" type="button"
+            { !this.props.logged_in ? <input className="spaced_button" type="button"
                                              value="Register" onClick={this.show_register} /> : null }
             { this.props.logged_in ? <UserSummary username={this.props.user} /> : null}
             { (!this.props.logged_in && this.state.show_login) ? <LoginBox close_function={this.hide_login}
-                                                                           login_function={this.props.login_function}/> : null }
+                                                                           login_function={this.props.login_function}
+                                                                           failed_login={this.props.failed_login} /> : null }
             { (!this.props.logged_in && this.state.show_register) ? <RegistrationBox close_function={this.hide_register}
                                                                                      register_function={this.register}/> : null }
             </div>

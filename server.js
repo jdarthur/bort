@@ -1,4 +1,10 @@
 const express = require('express');
+const session = require('express-session')
+
+const redis = require("redis");
+const connect_redis = require('connect-redis')(session);
+const redis_client  = redis.createClient();
+
 const bodyParser = require('body-parser')
 const path = require('path');
 const uuid = require("uuid/v4")
@@ -7,6 +13,13 @@ const bcrypt = require("bcrypt")
 const app = express();
 app.use(express.static(path.join(__dirname, 'build')))
 app.use(express.json())
+app.use(session({secret: process.env.SESSION_SECRET,
+                 store: new connect_redis({ host: 'localhost',
+                                    port: 6379,
+                                    client: redis_client,
+                                    ttl :  260}),
+                 saveUninitialized : true,
+                 resave: false}))
 
 const mysql = require('mysql2/promise')
 let conn = null
@@ -68,11 +81,11 @@ app.post('/login', function (req, res) {
         return res.send(valid_req)
     }
 
-    get_user(req.body.username, req.body.password, res)
+    get_user(req.body.username, req.body.password, req, res)
 
 });
 
-async function get_user(username, password, res) {
+async function get_user(username, password, req, res) {
     try {
         const [result, fields] = await conn.query("SELECT * FROM user WHERE name='" + username + "';")
 
@@ -80,7 +93,10 @@ async function get_user(username, password, res) {
             const hash = result[0].password_hash
             const success = await bcrypt.compare(password, hash)
             if (success) {
-                return res.send({"response": "Successfully logged in as '" + username + "'."})
+                // const session_id = uuid()
+                req.session.key = username
+                return res.send({"response": "Successfully logged in as '" + username + "'.",
+                                 "session_id" : "F"})
             }
 
             return res.status(401).send(invalid_username_password_response())
@@ -157,7 +173,7 @@ function has_illegal_characters(string) {
 
 */
 app.get('/threads', function (req, res) {
-
+    console.log(req.session)
     return res.send({"threads": []})
 
     // db.query("SELECT * FROM user WHERE name='" + req.body.username + "';", (err, result) => {

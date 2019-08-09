@@ -681,9 +681,15 @@ caption {
   justify-content: flex-end;
 }
 
-.navigation_bar_button {
+.spaced_button {
   display: flex;
-  margin: 5px;
+  margin: 5px 5px 5px 0px;
+}
+
+.horizontal_button_holder {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
 }
 
 .absolute_centered_container {
@@ -762,4 +768,11 @@ caption {
   padding: 5px;
   color: white;
 }
+
+.failure_message {
+  margin: 1rem 0 .5rem;
+  color: red;
+}
+
+
 

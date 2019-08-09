@@ -6,43 +6,39 @@ class App extends Component {
 
     state = {
         logged_in: false,
-        user: null
+        user: null,
+        failed_login: false,
+        session_id: null
     }
 
     login = (username, password) => {
-        console.log("logging in as " + username + "/" + password)
         postData("/login", {username, password})
             .then(data =>  {
-                console.log(JSON.stringify(data))
-                this.setState({logged_in: true, user: username})
+                // const session_id = data.session_id
+                // console.log(session_id)
+                this.setState({logged_in: true,
+                               user: username,})
+                               // session_id: session_id})
                 return true
             }).catch(error => {
+                this.setState({failed_login: true})
                 return false
             })
-
-
-        //send data to server
-        //if success,
-          //set this.logged_in = true
-          //close login box
-          //hid reg/login buttons
-        //else
-          // show login failure message
     }
 
     render() {
         return (
             <div className="page">
-            <NavigationBar logged_in={this.state.logged_in} user={this.state.user} login_function={this.login}/>
-            <ThreadList logged_in={this.state.logged_in} user={this.state.user}/>
+            <NavigationBar logged_in={this.state.logged_in} user={this.state.user}
+                           login_function={this.login} failed_login={this.state.failed_login}/>
+            <ThreadList logged_in={this.state.logged_in} user={this.state.user}
+                        session_id={this.state.session_id}/>
             </div>
             )
     }
 }
 
 function postData(url, data) {
-  // Default options are marked with *
-  console.log(data)
     return fetch(url, {
         method: 'POST',
         headers: {
@@ -51,12 +47,12 @@ function postData(url, data) {
         body: JSON.stringify(data),
     })
     .then(response => {
-
         if (response.status !== 200) {
             throw new Error(response.status)
         }
+        console.log(response)
         return response.json()
-    }); // parses JSON response into native JavaScript objects
+    });
 }
 
 export default App

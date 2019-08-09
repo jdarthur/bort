@@ -17,7 +17,7 @@ class NewThread extends Component {
     }
 
     create_thread = () => {
-        console.log("create new thread " + this.state.title)
+        this.props.create_function(this.state.title)
     }
 
     render() {
@@ -26,8 +26,12 @@ class NewThread extends Component {
             <input type="text"  name="title"
                    value={this.state.title} onChange={this.handleChange}
                    placeholder="Thread title"/>
-
-            <input type="button" value="Submit" onClick={this.create_thread} />
+            <div className="horizontal_button_holder">
+            <input type="button" value="Cancel" className="spaced_button"
+                   onClick={this.props.cancel_function} />
+            <input type="button" value="Submit" className="spaced_button"
+                   onClick={this.create_thread} />
+            </div>
             </div>
         )
     }

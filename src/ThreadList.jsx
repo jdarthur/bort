@@ -52,18 +52,33 @@ const threads = [{
 ]
 
 class ThreadList extends Component {
-    state =  {
-        threads: threads,
-        show_newthread: false,
+    constructor(props) {
+        super(props)
+        this.state =  {
+            threads: threads,
+            show_newthread: false,
+        }
+        get_data('/threads').then(data =>  {
+                console.log(data)
+            }).catch(error => {
+                return false
+            })
     }
+
 
     show_newthread = () =>  {
         this.setState({show_newthread: true})
+
     }
 
     hide_newthread = () =>  {
-        this.setState({show_newthread: true})
+        this.setState({show_newthread: false})
     }
+
+    create_thread = (title) => {
+        console.log("create thread '" + title + "'")
+    }
+
 
     render() {
         const thread_list = this.state.threads.map((thread) => (
@@ -76,11 +91,28 @@ class ThreadList extends Component {
             <div className="thread_list">
             { (this.props.logged_in && !this.state.show_newthread ) ? <input type="button" value="New thread"
                                                                              onClick={this.show_newthread} /> : null }
-            { this.state.show_newthread ? <NewThread /> : null}
+            { this.state.show_newthread ? <NewThread create_function={this.create_thread}
+                                                     cancel_function={this.hide_newthread}/> : null}
             {thread_list}
             </div>
             )
     }
+}
+
+function get_data(url) {
+    console.log("getting data from '" + url + "'")
+    return fetch(url, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => {
+        if (response.status !== 200) {
+            throw new Error(response.status)
+        }
+        return response.json()
+    });
 }
 
 export default ThreadList
