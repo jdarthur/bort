@@ -2,64 +2,17 @@ import React, { Component } from 'react'
 import Thread from "./Thread.jsx"
 import NewThread from "./NewThread.jsx"
 
-const threads = [{
-    title: "the first ever thread",
-    id: 1,
-    posts: [
-        {
-            id: 1,
-            user: "jimbo",
-            body: "this is the first post in the thread"
-        },
-        {
-            id: 2,
-            user: "larry",
-            body: "gr8 thread... love it"
-        },
-        {
-            id: 3,
-            user: "jimbo",
-            body: "thanks buddy"
-        },
-    ]
-},
-{
-    title: "wow look, another one",
-    id: 2,
-    posts: [
-        {
-            id: 1,
-            user: "larry",
-            body: "i made another thread guys"
-        },
-        {
-            id: 2,
-            user: "frank",
-            body: "why'd you do that"
-        },
-        {
-            id: 3,
-            user: "larry",
-            body: "just love to post.. simple as"
-        },
-        {
-            id: 4,
-            user: "jimbo",
-            body: "respect"
-        },
-    ]
-}
-]
-
 class ThreadList extends Component {
     constructor(props) {
         super(props)
         this.state =  {
-            threads: threads,
+            threads: [],
             show_newthread: false,
         }
         get_data('/threads').then(data =>  {
-                console.log(data)
+               console.log(data)
+               this.setState({"threads": data.threads})
+
             }).catch(error => {
                 return false
             })
@@ -77,16 +30,23 @@ class ThreadList extends Component {
 
     create_thread = (title) => {
         console.log("create thread '" + title + "'")
+        postData("/threads", {"thread_title" : title})
     }
 
 
     render() {
-        const thread_list = this.state.threads.map((thread) => (
-             <Thread key={thread.id}
-                     title={thread.title}
+        let thread_list = null
+        if (this.state.threads.length > 0) {
+            thread_list = this.state.threads.map((thread) => (
+             <Thread key={thread.thread_id}
+                     title={thread.thread_title}
+                     id={thread.thread_id}
                      posts={thread.posts}
-                     logged_in={this.props.logged_in} />
+                     logged_in={this.props.logged_in}
+                     user={this.props.user}/>
                  ));
+        }
+
         return (
             <div className="thread_list">
             { (this.props.logged_in && !this.state.show_newthread ) ? <input type="button" value="New thread"
@@ -111,6 +71,23 @@ function get_data(url) {
         if (response.status !== 200) {
             throw new Error(response.status)
         }
+        return response.json()
+    });
+}
+
+function postData(url, data) {
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    })
+    .then(response => {
+        if (response.status !== 200) {
+            throw new Error(response.status)
+        }
+        console.log(response)
         return response.json()
     });
 }

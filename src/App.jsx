@@ -8,7 +8,6 @@ class App extends Component {
         logged_in: false,
         user: null,
         failed_login: false,
-        session_id: null
     }
 
     login = (username, password) => {
@@ -31,8 +30,7 @@ class App extends Component {
             <div className="page">
             <NavigationBar logged_in={this.state.logged_in} user={this.state.user}
                            login_function={this.login} failed_login={this.state.failed_login}/>
-            <ThreadList logged_in={this.state.logged_in} user={this.state.user}
-                        session_id={this.state.session_id}/>
+            <ThreadList logged_in={this.state.logged_in} user={this.state.user}/>
             </div>
             )
     }

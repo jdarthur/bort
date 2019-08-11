@@ -52,28 +52,28 @@ app.post('/register', function (req, res) {
     if (valid_req !== true) {
         return res.send(valid_req)
     }
+    register_user(req, res)
+});
 
-    db.query("SELECT * FROM user WHERE name='" + req.body.username + "';", (err, result) => {
-        if (err) {
-            throw_err
-        }
-
+async function register_user(req, res) {
+    try {
+        const [result, fields] = await conn.execute("SELECT * FROM user WHERE name= ?", [req.body.username])
         if (result.length === 0) {
             const saltRounds = 10;
             hash = bcrypt.hashSync(req.body.password, saltRounds)
 
-            db.query("INSERT INTO user (name, password_hash) values ('" + req.body.username + "', '" + hash + "');", (err2, result2) => {
-                if (err2) {
-                    return res.send({"response": "Failed to register user '" + req.body.username + "."})
-                }
-
-                return res.send({"response": "Successfully registered user '" + req.body.username + "' (" + hash + ")."})
-            })
-        } else {
-            return res.send({"response": "Failed to register user '" + req.body.username + "."})
+            const [result2, field2] = await conn.execute("INSERT INTO user (name, password_hash) values (?, ?)", [req.body.username, hash])
+            return res.send({"response": "Successfully registered user '" + req.body.username + "."})
         }
-    })
-});
+        else {
+            return res.status(401).send({"response": "Failed to register user '" + req.body.username + "."})
+        }
+    }
+
+    catch(err) {
+        throw err
+    }
+}
 
 app.post('/login', function (req, res) {
     const valid_req = valid_login_register_request(req)
@@ -82,12 +82,11 @@ app.post('/login', function (req, res) {
     }
 
     get_user(req.body.username, req.body.password, req, res)
-
 });
 
 async function get_user(username, password, req, res) {
     try {
-        const [result, fields] = await conn.query("SELECT * FROM user WHERE name='" + username + "';")
+        const [result, fields] = await conn.execute("SELECT * FROM `user` WHERE `name` = ?", [username])
 
         if (result.length !== 0) {
             const hash = result[0].password_hash
@@ -161,6 +160,25 @@ function has_illegal_characters(string) {
     }
     return false
 }
+
+app.get('/users/:id', function (req, res) {
+    get_username(req, res)
+});
+
+
+async function get_username(req, res) {
+    try {
+        const [result, fields] = await conn.execute("SELECT * FROM user WHERE user_id = ?", [req.params.id])
+        if (result.length !== 0) {
+            return res.send({"name" : result[0].name})
+        }
+        return res.status(404).send({"response" : "not found"})
+    }
+
+    catch(err) {
+        throw err
+    }
+}
 /*
 =============================================
 =============================================
@@ -169,34 +187,180 @@ function has_illegal_characters(string) {
 =============================================
 */
 
-/*
 
+
+
+/*
+============================
+           GET ALL
+============================
 */
 app.get('/threads', function (req, res) {
-    console.log(req.session)
-    return res.send({"threads": []})
-
-    // db.query("SELECT * FROM user WHERE name='" + req.body.username + "';", (err, result) => {
-    //     if (err) {
-    //         throw_err
-    //     }
-
-    //     if (result.length !== 0) {
-    //         const hash = result[0].password_hash
-    //         const success = bcrypt.compareSync(req.body.password, hash)
-    //         if (success) {
-    //              return res.send({"response": "Successfully logged in as '" + req.body.username + "."})
-    //         }
-    //         else {
-    //             return res.send({"response": "Invalid username or password."})
-    //         }
-    //     }
-    //     else {
-    //         return res.send({"response": "Invalid username or password."})
-    //     }
-    // })
+    get_threads(req, res)
 });
 
+async function get_threads(req, res) {
+    try {
+        const thread_list = []
+        const [result, fields] = await conn.query("SELECT * FROM thread;")
+
+        if (result.length !== 0) {
+            for (let i  = 0; i < result.length; i++) {
+                thread = {
+                    thread_id : result[i].thread_id,
+                    thread_title : result[i].thread_title,
+                    date_created : result[i].date_created,
+                    user_id : result[i].user_id
+                }
+
+                thread_list.push(thread)
+            }
+        }
+        return res.send({"threads" : thread_list})
+    }
+
+    catch(err) {
+        throw err
+    }
+}
+
+app.get('/threads/:id', function (req, res) {
+    // console.log("getting posts in thread " + req.params.id)
+    get_posts_in_thread(req.params.id, req, res)
+});
+
+async function get_posts_in_thread(id, req, res) {
+    try {
+        const posts_list = []
+        const [result, fields] = await conn.execute("SELECT * FROM post WHERE thread_id = ?", [id])
+
+        if (result.length !== 0) {
+            for (let i  = 0; i < result.length; i++) {
+                post = {
+                    post_id : result[i].post_id,
+                    user_id : result[i].user_id,
+                    post_body : result[i].post_body,
+                    date_created : result[i].date_created
+                }
+
+                posts_list.push(post)
+            }
+        }
+        return res.send({"posts" : posts_list})
+    }
+
+    catch(err) {
+        throw err
+    }
+}
+
+/*
+============================
+           CREATE
+============================
+*/
+app.post('/threads', function (req, res) {
+    create_thread(req, res)
+});
+
+async function create_thread(req, res) {
+    try {
+        if (req.session.key) {
+            const [result, fields] = await conn.execute("SELECT * FROM user WHERE name = ?", [req.session.key])
+            if (result.length !== 0) {
+                const user_id = result[0].user_id
+                console.log(req.body.thread_title)
+                console.log(user_id)
+                const query = "INSERT INTO thread (thread_title, user_id) values (?, ?)"
+
+                const [result2, fields2] = await conn.execute(query, [req.body.thread_title, user_id])
+                return res.send({"result" : "success"})
+            }
+        }
+        else {
+            return res.status(401).send({"response" : "Unauthorized"})
+        }
+    }
+
+    catch(err) {
+        throw err
+    }
+}
+
+
+/*
+=============================================
+=============================================
+                P O S T S
+=============================================
+=============================================
+*/
+
+// app.get('/posts', function (req, res) {
+//     get_posts(req, res)
+// });
+
+
+// /*
+// ============================
+//            GET ALL
+// ============================
+// */
+// async function get_posts(req, res) {
+//     try {
+//         const thread_list = []
+//         // if (req.body.)
+//         const [result, fields] = await conn.query("SELECT * FROM post;")
+
+//         if (result.length !== 0) {
+//             for (let i  = 0; i < result.length; i++) {
+//                 thread = {
+//                     thread_id : result[i].thread_id,
+//                     thread_title : result[i].thread_title,
+//                     date_created : result[i].date_created,
+//                     user_id : result[i].user_id
+//                 }
+
+//                 thread_list.push(thread)
+//             }
+//         }
+//         return res.send({"posts" : thread_list})
+//     }
+
+//     catch(err) {
+//         throw err
+//     }
+// }
+
+/*
+============================
+           CREATE
+============================
+*/
+app.post('/posts', function (req, res) {
+    create_post(req, res)
+});
+
+async function create_post(req, res) {
+    try {
+        if (req.session.key) {
+            const [result, fields] = await conn.execute("SELECT * FROM `user` WHERE `name` = ?", [req.session.key])
+            if (result.length !== 0) {
+                const user_id = result[0].user_id
+                const query = "INSERT INTO post (post_body, thread_id, user_id) values (?, ?, ?)"
+                const [result2, fields2] = await conn.execute(query, [req.body.post_body, req.body.thread_id, user_id])
+                return res.send({"result" : "success"})
+            }
+        }
+        else {
+            return res.status(401).send({"response" : "Unauthorized"})
+        }
+    }
+
+    catch(err) {
+        throw err
+    }
+}
 
 
 

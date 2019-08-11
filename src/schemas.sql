@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS user (
 
 CREATE TABLE IF NOT EXISTS thread (
     thread_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    thread_title VARCHAR(32) UNIQUE,
+    thread_title VARCHAR(32) NOT NULL,
     user_id INT NOT NULL,
     date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id)
@@ -30,5 +30,5 @@ CREATE TABLE IF NOT EXISTS post (
         ON DELETE CASCADE,
     FOREIGN KEY (thread_id)
         REFERENCES thread(thread_id)
-        ON DELETE CASCADE,
+        ON DELETE CASCADE
 ) engine=innodb;

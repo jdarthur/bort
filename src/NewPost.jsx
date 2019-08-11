@@ -14,7 +14,9 @@ class NewPost extends Component {
     }
 
     create_post = () => {
-        console.log("create new post" + this.state.body)
+        console.log("create new post '" + this.state.body + "'.")
+        postData("/posts", {"thread_id" : this.props.thread_id,
+                            "post_body" : this.state.body})
     }
 
     render() {
@@ -32,3 +34,20 @@ class NewPost extends Component {
 }
 
 export default NewPost
+
+function postData(url, data) {
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    })
+    .then(response => {
+        if (response.status !== 200) {
+            throw new Error(response.status)
+        }
+        console.log(response)
+        return response.json()
+    });
+}

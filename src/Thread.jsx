@@ -3,23 +3,54 @@ import Post from "./Post.jsx"
 import NewPost from "./NewPost.jsx"
 
 class Thread extends Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            title: this.props.title,
+            posts: []
+        }
+        get_data('/threads/' + this.props.id).then(data =>  {
+               console.log(data)
+               this.setState({"posts": data.posts})
 
-    state = {
-        title: this.props.title,
-        posts: this.props.posts
+            }).catch(error => {
+                return false
+            })
     }
 
-
     render() {
-        const post_list = this.state.posts.map((post) => <Post key={post.id} user={post.user} body={post.body} />);
+        let post_list = null
+        if (this.state.posts.length > 0) {
+            post_list = this.state.posts.map((post) => (
+                <Post key={post.post_id} user_id={post.user_id}
+                      body={post.post_body} date_created={post.date_created}/>
+            ))
+        }
+
         return (
             <div className="thread">
-            <strong> {this.state.title}</strong>
+            <strong> {this.props.title}</strong>
             {post_list}
-            {this.props.logged_in ? <NewPost /> : null}
+            {this.props.logged_in ? <NewPost thread_id={this.props.id}/> : null}
             </div>
             )
     }
 }
 
 export default Thread
+
+function get_data(url, query={}) {
+    console.log("getting data from '" + url + "'")
+    return fetch(url, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => {
+        if (response.status !== 200) {
+            throw new Error(response.status)
+        }
+        return response.json()
+    });
+}
