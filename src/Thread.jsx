@@ -9,13 +9,28 @@ class Thread extends Component {
             title: this.props.title,
             posts: []
         }
-        get_data('/threads/' + this.props.id).then(data =>  {
-               console.log(data)
-               this.setState({"posts": data.posts})
+        this.get_posts()
+    }
 
-            }).catch(error => {
-                return false
-            })
+    get_posts = () => {
+        get_data('/threads/' + this.props.id).then(data =>  {
+           console.log(data)
+           this.setState({"posts": data.posts})
+
+        }).catch(error => {
+            return false
+        })
+    }
+
+    create_post = (post_body) => {
+        postData("/posts",
+                 {"thread_id" : this.props.id,
+                  "post_body" : post_body}).then(data =>
+            this.get_posts()
+        ).catch(error => {
+            console.log('uh oh')
+        })
+
     }
 
     render() {
@@ -31,7 +46,8 @@ class Thread extends Component {
             <div className="thread">
             <strong> {this.props.title}</strong>
             {post_list}
-            {this.props.logged_in ? <NewPost thread_id={this.props.id}/> : null}
+            {this.props.logged_in ? <NewPost thread_id={this.props.id}
+                                             create_function={this.create_post}/> : null}
             </div>
             )
     }
@@ -51,6 +67,24 @@ function get_data(url, query={}) {
         if (response.status !== 200) {
             throw new Error(response.status)
         }
+        return response.json()
+    });
+}
+
+function postData(url, data) {
+    console.log(data)
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    })
+    .then(response => {
+        if (response.status !== 200) {
+            throw new Error(response.status)
+        }
+        console.log(response)
         return response.json()
     });
 }

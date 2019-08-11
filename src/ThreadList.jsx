@@ -9,13 +9,7 @@ class ThreadList extends Component {
             threads: [],
             show_newthread: false,
         }
-        get_data('/threads').then(data =>  {
-               console.log(data)
-               this.setState({"threads": data.threads})
-
-            }).catch(error => {
-                return false
-            })
+        this.get_threads()
     }
 
 
@@ -30,7 +24,22 @@ class ThreadList extends Component {
 
     create_thread = (title) => {
         console.log("create thread '" + title + "'")
-        postData("/threads", {"thread_title" : title})
+        postData("/threads", {"thread_title" : title}).then(data => {
+            this.hide_newthread()
+            this.get_threads()
+        }).catch(error => {
+            console.log('uh oh')
+        })
+    }
+
+    get_threads = () => {
+        get_data('/threads').then(data =>  {
+               console.log(data)
+               this.setState({"threads": data.threads})
+
+            }).catch(error => {
+                return false
+            })
     }
 
 

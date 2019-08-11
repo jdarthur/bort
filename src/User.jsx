@@ -15,7 +15,7 @@ class User extends Component {
 
     render() {
         return (
-            <div className="post_header"> {this.state.username} </div>
+            <div className="username"> {this.state.username} </div>
             )
     }
 }
